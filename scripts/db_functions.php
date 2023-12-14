@@ -13,7 +13,7 @@ include_once '../config/db_config.php';
  * @param string $mobileNumber
  * @return bool Returns true on success, false on failure.
  */
-function insertData($firstName, $lastName, $gender, $description, $mobileNumber, $file)
+function insertData($firstName, $lastName, $email, $gender, $description, $mobileNumber, $file)
 { 
   $fileName = $file['name'];
   $fileTmpName = $file['tmp_name'];
@@ -22,32 +22,24 @@ function insertData($firstName, $lastName, $gender, $description, $mobileNumber,
 
   global $mysqli;
 
-    // Perform data validation and sanitation here if needed
-
-    // Check if file was uploaded without errors
     if ($fileError === 0) {
-      // Move the uploaded file to a specific folder (you may need to create this folder)
+
       $fileDestination = '../uploads/' . $fileName;
       move_uploaded_file($fileTmpName, $fileDestination);
 
-      // Example SQL query for insertion
-      $query = "INSERT INTO user_info (first_name, last_name, gender, description, mobile_number, uploaded_file) 
-              VALUES (?, ?, ?, ?, ?, ?)";
+      $query = "INSERT INTO user_info (first_name, last_name, email, gender, description, mobile_number, uploaded_file) 
+              VALUES (?, ?, ?, ?, ?, ?, ?)";
 
       $stmt = $mysqli->prepare($query);
 
-      // Bind parameters
-      $stmt->bind_param('ssssss', $firstName, $lastName, $gender, $description, $mobileNumber, $fileDestination);
+      $stmt->bind_param('sssssss', $firstName, $lastName, $email, $gender, $description, $mobileNumber, $fileDestination);
 
-      // Execute the query
       $result = $stmt->execute();
 
-      // Close the statement
       $stmt->close();
 
       return $result;
   } else {
-      // Handle file upload errors if needed
       return false;
   }
 }
@@ -61,23 +53,54 @@ function getRecords()
 {
     global $mysqli;
 
-    // Example SQL query for retrieval
     $query = "SELECT * FROM user_info";
 
     $result = $mysqli->query($query);
 
     $records = [];
 
-    // Fetch records as an associative array
     while ($row = $result->fetch_assoc()) {
         $records[] = $row;
     }
 
-    // Free the result set
     $result->free();
 
     return $records;
 }
 
+function deleteData($id)
+{
+  global $mysqli;
+
+  $query = "SELECT * FROM user_info where user_id = $id";
+
+  $result = $mysqli->query($query);
+
+  while ($row = $result->fetch_assoc()) {
+    $filePath = $row['uploaded_file'];
+    // $query = "SELECT uploaded_file FROM user_info where uploaded_file = $filePath";
+    // $result = $mysqli->query($query);
+
+    if (file_exists($filePath)) {
+
+      if (unlink($filePath)) {
+        $query = "DELETE FROM user_info WHERE user_id = ?";
+        $stmt = $mysqli->prepare($query);
+
+        $stmt->bind_param('s', $id);
+
+        $result = $stmt->execute();
+
+        $stmt->close();
+        getRecords();
+      } else {
+          echo "Error deleting image file";
+      }
+    } else {
+        echo "File does not exist";
+    }
+  }
+
+}
 // Add more functions as needed for updating, deleting, or querying specific records
 // Ensure to handle errors and security considerations appropriately

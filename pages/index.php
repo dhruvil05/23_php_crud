@@ -5,7 +5,10 @@ include_once '../scripts/db_functions.php';
 // Retrieve records from the database
 $records = getRecords();
 // echo json_encode($records);
-
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $id = $_POST['delete'];
+    deleteData($id);
+}
 ?>
 
 <h2>Record List</h2>
@@ -16,6 +19,7 @@ $records = getRecords();
             <th>ID</th>
             <th>First Name</th>
             <th>Last Name</th>
+            <th>Email</th>
             <th>Gender</th>
             <th>Description</th>
             <th>Mobile Number</th>
@@ -30,6 +34,7 @@ $records = getRecords();
                 <td><?php echo $record['user_id']; ?></td>
                 <td><?php echo $record['first_name']; ?></td>
                 <td><?php echo $record['last_name']; ?></td>
+                <td><?php echo $record['email']; ?></td>
                 <td><?php echo $record['gender']; ?></td>
                 <td><?php echo $record['description']; ?></td>
                 <td><?php echo $record['mobile_number']; ?></td>
@@ -45,8 +50,12 @@ $records = getRecords();
                   ?>
                 </td>
                 <td class="btn_grp">
-                  <button class="btn_dlt">Delete</button>
-                  <button class="btn_updt">Update</button>
+                    <form action="" method="post">
+                        <button class="btn_dlt" name="delete" value="<?php echo $record['user_id']; ?>">Delete</button>
+                    </form>
+                    <form action="" method="post">
+                        <button class="btn_updt" name="update" value="<?php echo $record['user_id']; ?>">Update</button>
+                    </form>
                 </td>
             </tr>
         <?php endforeach; ?>

@@ -7,13 +7,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Perform form validation and database insertion here
     $firstName = $_POST['first_name'];
     $lastName = $_POST['last_name'];
+    $email = $_POST['email'];
     $gender = $_POST['gender'];
     $description = $_POST['description'];
     $mobileNumber = $_POST['mobile_number'];
     $file = $_FILES['file_upload'];
 
     // Perform form validation and database insertion
-    $insertSuccess = insertData($firstName, $lastName, $gender, $description, $mobileNumber, $file);
+    $insertSuccess = insertData($firstName, $lastName, $email, $gender, $description, $mobileNumber, $file);
 
     if ($insertSuccess) {
         echo '<p class="success-message">Record added successfully!</p>';
@@ -33,6 +34,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <label for="last_name">Last Name:</label>
     <input type="text" name="last_name" required>
+
+    <label for="email">Email:</label>
+    <input type="email" name="email" required>
 
     <label for="gender">Gender:</label>
     <select name="gender" required>
