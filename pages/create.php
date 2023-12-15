@@ -18,8 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($insertSuccess) {
         echo '<p class="success-message">Record added successfully!</p>';
-        header("Location: http://localhost/23_php_crud/pages/index.php", true, 301);
-        exit();
+        header("Location: http://localhost/23_php_crud/pages/index.php");
     } else {
         echo '<p class="error-message">Error adding record. Please try again.</p>';
     }

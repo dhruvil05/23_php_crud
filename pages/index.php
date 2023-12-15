@@ -53,7 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <form action="" method="post">
                         <button class="btn_dlt" name="delete" value="<?php echo $record['user_id']; ?>">Delete</button>
                     </form>
-                    <form action="" method="post">
+                    <form action="./update.php" method="get">
                         <button class="btn_updt" name="update" value="<?php echo $record['user_id']; ?>">Update</button>
                     </form>
                 </td>

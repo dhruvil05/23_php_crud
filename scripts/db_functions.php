@@ -15,30 +15,30 @@ include_once '../config/db_config.php';
  */
 function insertData($firstName, $lastName, $email, $gender, $description, $mobileNumber, $file)
 { 
-  $fileName = $file['name'];
+  $fileName = time().'.png';
   $fileTmpName = $file['tmp_name'];
   $fileSize = $file['size'];
   $fileError = $file['error'];
-
+  
   global $mysqli;
 
-    if ($fileError === 0) {
+  if ($fileError === 0) {
 
-      $fileDestination = '../uploads/' . $fileName;
-      move_uploaded_file($fileTmpName, $fileDestination);
+    $fileDestination = '../uploads/' . $fileName;
+    move_uploaded_file($fileTmpName, $fileDestination);
 
-      $query = "INSERT INTO user_info (first_name, last_name, email, gender, description, mobile_number, uploaded_file) 
-              VALUES (?, ?, ?, ?, ?, ?, ?)";
+    $query = "INSERT INTO user_info (first_name, last_name, email, gender, description, mobile_number, uploaded_file) 
+            VALUES (?, ?, ?, ?, ?, ?, ?)";
 
-      $stmt = $mysqli->prepare($query);
+    $stmt = $mysqli->prepare($query);
 
-      $stmt->bind_param('sssssss', $firstName, $lastName, $email, $gender, $description, $mobileNumber, $fileDestination);
+    $stmt->bind_param('sssssss', $firstName, $lastName, $email, $gender, $description, $mobileNumber, $fileDestination);
 
-      $result = $stmt->execute();
+    $result = $stmt->execute();
 
-      $stmt->close();
+    $stmt->close();
 
-      return $result;
+    return $result;
   } else {
       return false;
   }
@@ -74,33 +74,70 @@ function deleteData($id)
 
   $query = "SELECT * FROM user_info where user_id = $id";
 
-  $result = $mysqli->query($query);
+  $result = $mysqli->query($query) or die($mysqli->error);
+  $rowCount = $result->num_rows;        // Count rows got by query.
+  
+  if($rowCount > 0){
 
-  while ($row = $result->fetch_assoc()) {
-    $filePath = $row['uploaded_file'];
-    // $query = "SELECT uploaded_file FROM user_info where uploaded_file = $filePath";
-    // $result = $mysqli->query($query);
+    while ($row = $result->fetch_assoc()) {
+      $filePath = $row['uploaded_file'];
 
-    if (file_exists($filePath)) {
+      if (file_exists($filePath)) {
 
-      if (unlink($filePath)) {
-        $query = "DELETE FROM user_info WHERE user_id = ?";
-        $stmt = $mysqli->prepare($query);
+        if (unlink($filePath)) {
+          $query = "DELETE FROM user_info WHERE user_id = ?";
+          $stmt = $mysqli->prepare($query);
 
-        $stmt->bind_param('s', $id);
+          $stmt->bind_param('i', $id);
 
-        $result = $stmt->execute();
+          $result = $stmt->execute();
 
-        $stmt->close();
-        getRecords();
+          $stmt->close();
+          getRecords();
+        } else {
+            echo "Error deleting image file";
+        }
       } else {
-          echo "Error deleting image file";
+          echo "File does not exist";
       }
-    } else {
-        echo "File does not exist";
     }
+  }else {
+    echo "Data not available.";
   }
-
 }
 // Add more functions as needed for updating, deleting, or querying specific records
 // Ensure to handle errors and security considerations appropriately
+function getUpdateData($id){
+  global $mysqli;
+
+  $query = "SELECT * FROM user_info WHERE user_id = $id";
+
+  $result = $mysqli->query($query);
+
+  $records = [];
+
+  while ($row = $result->fetch_assoc()) {
+      $records[] = $row;
+  }
+
+  $result->free();
+
+  return $records;
+}
+
+function updateData($firstName, $lastName, $email, $gender, $description, $mobileNumber, $id){
+  
+  global $mysqli;
+  $query = "UPDATE user_info SET first_name=?, last_name=?, email=?, gender=?, description=?, mobile_number=? WHERE user_id = ?";
+
+  $stmt = $mysqli->prepare($query);
+
+  $stmt->bind_param('ssssssi', $firstName, $lastName, $email, $gender, $description, $mobileNumber, $id);
+
+  $result = $stmt->execute();
+
+  $stmt->close();
+
+  return $result;
+  
+}
